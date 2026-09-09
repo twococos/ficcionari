@@ -14,7 +14,8 @@ export function HomePage() {
       </header>
 
       <main className="flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 text-center">
-        <div>
+        <div className="flex flex-col items-center">
+          <img src="/favicon.svg" alt={t('app.name')} className="mb-4 h-36 w-36" />
           <h1 className="text-5xl font-black tracking-tight text-white drop-shadow-md">
             {t('app.name')}
           </h1>
@@ -31,9 +32,7 @@ export function HomePage() {
         </div>
       </main>
 
-      <footer className="pb-2 text-center text-xs text-white/40">
-        {t('home.attribution')}
-      </footer>
+      <footer className="pb-2 text-center text-xs text-white/40">{t('home.attribution')}</footer>
     </div>
   )
 }

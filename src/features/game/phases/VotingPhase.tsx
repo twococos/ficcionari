@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/Card'
+import { CheckIcon } from '@/components/CheckIcon'
 import { WaitingScreen } from '../WaitingScreen'
 import { useGameStore } from '@/store/gameStore'
 import { stableShuffle } from '@/game/shuffle'
@@ -49,12 +50,19 @@ export function VotingPhase({ voteType }: VotingPhaseProps) {
     }
   }
 
+  // Sobre el fons accent (votació graciosa) el text ha de ser fosc per contrastar.
+  const funny = voteType === 'funny'
+
   if (myVote) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-        <p className="text-2xl">✅</p>
-        <p className="text-lg font-bold text-accent">{t(`${ns}.voted`)}</p>
-        <p className="text-sm text-white/60">{t(`${ns}.waitingOthers`)}</p>
+        <CheckIcon />
+        <p className={`text-lg font-bold ${funny ? 'text-primary-dark' : 'text-accent'}`}>
+          {t(`${ns}.voted`)}
+        </p>
+        <p className={`text-sm ${funny ? 'text-primary-dark/70' : 'text-white/60'}`}>
+          {t(`${ns}.waitingOthers`)}
+        </p>
       </div>
     )
   }
@@ -62,8 +70,12 @@ export function VotingPhase({ voteType }: VotingPhaseProps) {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="text-center">
-        <h2 className="text-2xl font-black text-white">{t(`${ns}.title`)}</h2>
-        <p className="mt-1 text-sm text-white/60">{t(`${ns}.instruction`)}</p>
+        <h2 className={`text-2xl font-black ${funny ? 'text-primary-dark' : 'text-white'}`}>
+          {t(`${ns}.title`)}
+        </h2>
+        <p className={`mt-1 text-sm ${funny ? 'text-primary-dark/70' : 'text-white/60'}`}>
+          {t(`${ns}.instruction`)}
+        </p>
       </div>
 
       <ul className="flex flex-col gap-3">
@@ -78,18 +90,27 @@ export function VotingPhase({ voteType }: VotingPhaseProps) {
                 disabled={disabled}
                 className="w-full text-left disabled:opacity-50"
               >
-                <Card
-                  className={`transition ${
-                    disabled ? '' : 'hover:ring-2 hover:ring-accent'
-                  }`}
-                >
-                  <span className="text-white">{d.text}</span>
-                  {voteType === 'real' && isOwn && (
-                    <span className="mt-1 block text-xs font-bold text-accent">
-                      {t('voteReal.ownDefinition')}
-                    </span>
-                  )}
-                </Card>
+                {funny ? (
+                  // Targeta blanca sobre el fons accent.
+                  <div
+                    className={`rounded-3xl bg-white p-5 shadow-lg transition ${
+                      disabled ? '' : 'hover:ring-2 hover:ring-primary-dark'
+                    }`}
+                  >
+                    <span className="text-primary-dark">{d.text}</span>
+                  </div>
+                ) : (
+                  <Card
+                    className={`transition ${disabled ? '' : 'hover:ring-2 hover:ring-accent'}`}
+                  >
+                    <span className="text-white">{d.text}</span>
+                    {isOwn && (
+                      <span className="mt-1 block text-xs font-bold text-accent">
+                        {t('voteReal.ownDefinition')}
+                      </span>
+                    )}
+                  </Card>
+                )}
               </button>
             </li>
           )

@@ -74,11 +74,16 @@ export function PickWordPhase() {
     <div className="flex flex-1 flex-col gap-6">
       <p className="text-center text-white/70">{t('pickWord.instruction')}</p>
 
-      <Card className="flex min-h-[140px] items-center justify-center">
+      <Card className="flex min-h-[140px] flex-col items-center justify-center gap-3 text-center">
         {loading || !current ? (
           <span className="text-white/50">{t('common.loading')}</span>
         ) : (
-          <span className="text-4xl font-black text-accent">{current.word}</span>
+          <>
+            <span className="text-4xl font-black text-accent">{current.word}</span>
+            {game?.show_definition_on_pick && (
+              <span className="text-sm text-white/70">{current.definition}</span>
+            )}
+          </>
         )}
       </Card>
 

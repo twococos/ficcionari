@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ScreenLayout } from '@/components/ScreenLayout'
@@ -11,7 +11,10 @@ import { useGameRealtime } from './useGameRealtime'
 import { usePresence } from '@/features/game/usePresence'
 import { useTransfers } from '@/features/game/useTransfers'
 import { useKickRedirect } from '@/features/game/useKickRedirect'
-import { fetchGameByCode, startGame, kickPlayer } from './lobbyApi'
+import { fetchGameByCode, startGame, kickPlayer, updateGameOptions } from './lobbyApi'
+import { GameOptionsFields, type GameOptionsValue } from './GameOptionsFields'
+import type { SupportedLanguage } from '@/i18n/config'
+import type { Game } from '@/lib/database.types'
 import { getDeviceId } from '@/lib/device'
 
 export function LobbyPage() {
@@ -28,6 +31,11 @@ export function LobbyPage() {
 
   const [loading, setLoading] = useState(!game || game.code !== code)
   const [notFound, setNotFound] = useState(false)
+  const [starting, setStarting] = useState(false)
+
+  // Esborrany viu de les opcions editades pel host (l'omple GameOptionsEditor).
+  // En començar, es desa abans d'arrencar la partida (sense botó de desar).
+  const optionsDraftRef = useRef<GameOptionsValue | null>(null)
 
   // Manté el store sincronitzat via Realtime + presència + traspàs d'host.
   useGameRealtime()
@@ -100,6 +108,30 @@ export function LobbyPage() {
   const connected = players.filter((p) => p.is_connected)
   const enoughPlayers = connected.length >= MIN_PLAYERS
 
+  // En començar: desa primer les opcions editades (si n'hi ha) i després arrenca.
+  async function handleStart() {
+    if (!game) return
+    setStarting(true)
+    try {
+      const draft = optionsDraftRef.current
+      if (draft) {
+        await updateGameOptions(game.id, {
+          language: draft.language,
+          totalRounds: draft.rounds,
+          scoreFunnyEnabled: draft.funnyMode,
+          showDefinitionOnPick: draft.showDefinitionOnPick,
+          pointsGuessReal: draft.pointsGuessReal,
+          pointsDeceived: draft.pointsDeceived,
+          pointsFunniest: draft.pointsFunniest,
+        })
+      }
+      await startGame(game.id)
+    } catch (e) {
+      console.error(e)
+      setStarting(false)
+    }
+  }
+
   return (
     <ScreenLayout title={t('lobby.title')} onBack={() => navigate('/')}>
       <div className="flex flex-col gap-6">
@@ -153,15 +185,26 @@ export function LobbyPage() {
           </ul>
         </div>
 
+        {/* Opcions de la partida (només el host les pot editar). L'esborrany
+            s'informa cap amunt i es desa en clicar Començar. */}
+        {isHost() && (
+          <GameOptionsEditor
+            game={game}
+            onDraftChange={(d) => {
+              optionsDraftRef.current = d
+            }}
+          />
+        )}
+
         {/* Acció: començar (host) o esperar */}
         {isHost() ? (
           <div className="flex flex-col gap-2">
             <Button
               variant="accent"
-              onClick={() => startGame(game.id)}
-              disabled={!enoughPlayers}
+              onClick={handleStart}
+              disabled={!enoughPlayers || starting}
             >
-              {t('lobby.startGame')}
+              {starting ? t('common.loading') : t('lobby.startGame')}
             </Button>
             {!enoughPlayers && (
               <p className="text-center text-xs text-white/60">
@@ -174,6 +217,63 @@ export function LobbyPage() {
         )}
       </div>
     </ScreenLayout>
+  )
+}
+
+/** Deriva els valors del formulari d'opcions a partir de la fila de la partida. */
+function optionsFromGame(game: Game): GameOptionsValue {
+  return {
+    language: game.language as SupportedLanguage,
+    rounds: game.total_rounds,
+    funnyMode: game.score_funny_enabled,
+    showDefinitionOnPick: game.show_definition_on_pick,
+    pointsGuessReal: game.score_guess_real,
+    pointsDeceived: game.score_deceived,
+    pointsFunniest: game.score_funniest,
+  }
+}
+
+/**
+ * Editor plegable de les opcions de la partida al lobby (només host). Manté un
+ * esborrany local i l'informa cap amunt via `onDraftChange`; no es desa amb un
+ * botó, sinó que el LobbyPage el desa en clicar "Començar partida".
+ */
+function GameOptionsEditor({
+  game,
+  onDraftChange,
+}: {
+  game: Game
+  onDraftChange: (draft: GameOptionsValue) => void
+}) {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState<GameOptionsValue>(() => optionsFromGame(game))
+
+  // Informa el pare del valor inicial (i cada cop que canvia) perquè el pugui
+  // desar en començar. No depenem de `game` per no trepitjar edicions en curs.
+  useEffect(() => {
+    onDraftChange(draft)
+  }, [draft, onDraftChange])
+
+  const patch = (p: Partial<GameOptionsValue>) => setDraft((d) => ({ ...d, ...p }))
+
+  return (
+    <Card>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 text-left"
+        aria-expanded={open}
+      >
+        <span className="font-bold text-white">{t('lobby.editOptions')}</span>
+        <span className="text-white/50">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="mt-4 flex flex-col gap-5">
+          <GameOptionsFields value={draft} onChange={patch} />
+        </div>
+      )}
+    </Card>
   )
 }
 

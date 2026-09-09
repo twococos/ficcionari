@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { Game, Player, Round, RoundPhase, Definition, Vote } from '@/lib/database.types'
-import { computeRoundScores } from '@/game/scoring'
+import { computeRoundScores, pointsFromGame } from '@/game/scoring'
 
 // -----------------------------------------------------------------------------
 // Selecció de narrador
@@ -280,8 +280,7 @@ export async function applyRoundScoring(
   round: Round,
   definitions: Definition[],
   votes: Vote[],
-  players: Player[],
-  funnyEnabled: boolean
+  game: Game
 ): Promise<boolean> {
   if (round.scored) return false
 
@@ -295,20 +294,26 @@ export async function applyRoundScoring(
   if (claimErr) throw claimErr
   if (!claimed || claimed.length === 0) return false // un altre client ja ho ha fet
 
-  // Calcula i suma els punts a cada jugador.
-  const result = computeRoundScores(definitions, votes, funnyEnabled)
-  const currentScore = new Map(players.map((p) => [p.id, p.score]))
+  // Calcula els punts amb els valors configurats de la partida.
+  const result = computeRoundScores(
+    definitions,
+    votes,
+    game.score_funny_enabled,
+    pointsFromGame(game)
+  )
 
+  // Suma ATÒMICA al servidor: score = score + delta, calculat a la BD. Així el
+  // total no depèn del snapshot local (que pot anar endarrerit), cosa que abans
+  // feia divergir el podi/classificació entre dispositius quan el narrador rotava.
   await Promise.all(
     Object.values(result.byPlayer)
       .filter((d) => d.total > 0)
-      .map((d) => {
-        const base = currentScore.get(d.playerId) ?? 0
-        return supabase
-          .from('players')
-          .update({ score: base + d.total })
-          .eq('id', d.playerId)
-      })
+      .map((d) =>
+        supabase.rpc('increment_player_score', {
+          p_player_id: d.playerId,
+          p_delta: d.total,
+        })
+      )
   )
 
   return true

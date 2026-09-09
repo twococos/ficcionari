@@ -34,6 +34,12 @@
     "gameLanguageHint": "Idioma de les paraules i definicions",
     "funnyMode": "Puntuar la definició més graciosa",
     "funnyModeHint": "Una votació extra a la més divertida",
+    "showDefinition": "Mostrar la definició en triar",
+    "showDefinitionHint": "El narrador veu la definició del diccionari mentre tria paraula",
+    "pointsTitle": "Puntuació",
+    "pointsGuessReal": "Encertar la definició real",
+    "pointsDeceived": "Que votin la teva definició",
+    "pointsFunniest": "Definició més graciosa",
     "createButton": "Crear partida"
   },
   "join": {
@@ -59,7 +65,8 @@
     "needMorePlayers": "Calen almenys {{count}} jugadors per començar",
     "shareLink": "Copiar enllaç",
     "leave": "Sortir",
-    "kick": "Expulsar"
+    "kick": "Expulsar",
+    "editOptions": "Opcions de la partida"
   },
   "host": {
     "abort": "Acabar la partida",
@@ -98,7 +105,8 @@
     "edit": "Editar",
     "narratorWaiting": "Els jugadors estan escrivint…",
     "submittedCount": "{{done}} de {{total}} han enviat",
-    "forceNext": "Passar igualment"
+    "forceNext": "Passar igualment",
+    "hurryUp": "Ets l'últim! Afanya't…"
   },
   "read": {
     "title": "Llegeix les definicions",

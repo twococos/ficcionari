@@ -34,6 +34,12 @@
     "gameLanguageHint": "Idioma de las palabras y definiciones",
     "funnyMode": "Puntuar la definición más graciosa",
     "funnyModeHint": "Una votación extra a la más divertida",
+    "showDefinition": "Mostrar la definición al elegir",
+    "showDefinitionHint": "El narrador ve la definición del diccionario mientras elige palabra",
+    "pointsTitle": "Puntuación",
+    "pointsGuessReal": "Acertar la definición real",
+    "pointsDeceived": "Que voten tu definición",
+    "pointsFunniest": "Definición más graciosa",
     "createButton": "Crear partida"
   },
   "join": {
@@ -59,7 +65,8 @@
     "needMorePlayers": "Se necesitan al menos {{count}} jugadores para empezar",
     "shareLink": "Copiar enlace",
     "leave": "Salir",
-    "kick": "Expulsar"
+    "kick": "Expulsar",
+    "editOptions": "Opciones de la partida"
   },
   "host": {
     "abort": "Terminar la partida",
@@ -98,7 +105,8 @@
     "edit": "Editar",
     "narratorWaiting": "Los jugadores están escribiendo…",
     "submittedCount": "{{done}} de {{total}} han enviado",
-    "forceNext": "Pasar igualmente"
+    "forceNext": "Pasar igualmente",
+    "hurryUp": "¡Eres el último! Date prisa…"
   },
   "read": {
     "title": "Lee las definiciones",

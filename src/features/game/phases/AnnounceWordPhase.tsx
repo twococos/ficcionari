@@ -16,14 +16,11 @@ export function AnnounceWordPhase() {
   if (!round) return null
 
   if (!isNarrator()) {
+    // Els jugadors NO veuen la paraula: l'han d'escoltar del narrador.
     return (
       <WaitingScreen
         message={t('announce.narratorAnnouncing', { name: narrator()?.nickname ?? '' })}
-      >
-        <Card className="mt-2">
-          <span className="text-3xl font-black text-accent">{round.word}</span>
-        </Card>
-      </WaitingScreen>
+      />
     )
   }
 

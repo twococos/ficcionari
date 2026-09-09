@@ -22,6 +22,12 @@ export interface Game {
   language: string
   total_rounds: number
   score_funny_enabled: boolean
+  // Punts configurables per partida (default 1/1/1).
+  score_guess_real: number
+  score_deceived: number
+  score_funniest: number
+  // Si el narrador veu la definició del diccionari mentre tria paraula.
+  show_definition_on_pick: boolean
   status: GameStatus
   current_round: number
   created_at: string
@@ -107,7 +113,12 @@ export interface Database {
       }
     }
     Views: Record<never, never>
-    Functions: Record<never, never>
+    Functions: {
+      increment_player_score: {
+        Args: { p_player_id: string; p_delta: number }
+        Returns: void
+      }
+    }
     Enums: Record<never, never>
     CompositeTypes: Record<never, never>
   }

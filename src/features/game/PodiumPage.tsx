@@ -60,9 +60,12 @@ export function PodiumPage() {
     )
   }
 
-  const ranked = [...players]
-    .filter((p) => p.is_connected)
-    .sort((a, b) => b.score - a.score)
+  // Tots els jugadors (no només connectats) i desempat estable per joined_at:
+  // així el podi és idèntic a tots els dispositius. Abans el filtre de connexió
+  // feia divergir el podi (jugadors que faltaven / guanyador diferent per telèfon).
+  const ranked = [...players].sort(
+    (a, b) => b.score - a.score || a.joined_at.localeCompare(b.joined_at)
+  )
 
   const top = ranked[0]
   const isTie = ranked.length > 1 && ranked[1].score === top?.score

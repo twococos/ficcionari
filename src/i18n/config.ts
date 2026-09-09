@@ -26,7 +26,10 @@ i18n
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      // Només la preferència desada per l'usuari; si no n'hi ha, cau al
+      // fallbackLng ('ca'). Així el català és l'idioma per defecte encara que el
+      // navegador estigui en castellà (abans 'navigator' el forçava a 'es').
+      order: ['localStorage'],
       lookupLocalStorage: 'ficcionari-lang',
       caches: ['localStorage'],
     },

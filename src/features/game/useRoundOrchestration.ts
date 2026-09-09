@@ -83,7 +83,7 @@ export function useRoundOrchestration() {
     if (round.phase === 'reveal' && !round.scored) {
       if (lastActionRef.current !== actionKey('reveal')) {
         lastActionRef.current = actionKey('reveal')
-        void applyRoundScoring(round, definitions, votes, players, game.score_funny_enabled)
+        void applyRoundScoring(round, definitions, votes, game)
       }
       return
     }

@@ -10,9 +10,12 @@ export function Scoreboard() {
   const players = useGameStore((s) => s.players)
   const localPlayerId = useGameStore((s) => s.localPlayerId)
 
-  const ranked = [...players]
-    .filter((p) => p.is_connected)
-    .sort((a, b) => b.score - a.score)
+  // Mostrem TOTS els jugadors (no només els connectats): la presència fluctua per
+  // dispositiu i abans feia que cada telèfon amagués jugadors diferents. Desempat
+  // estable per joined_at perquè l'ordre sigui idèntic a tots els dispositius.
+  const ranked = [...players].sort(
+    (a, b) => b.score - a.score || a.joined_at.localeCompare(b.joined_at)
+  )
 
   return (
     <Card>

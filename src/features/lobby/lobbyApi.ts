@@ -8,6 +8,12 @@ export interface CreateGameOptions {
   totalRounds: number
   scoreFunnyEnabled: boolean
   hostNickname: string
+  // Punts configurables (encertar la real / que et votin / més graciosa).
+  pointsGuessReal: number
+  pointsDeceived: number
+  pointsFunniest: number
+  // El narrador veu la definició del diccionari mentre tria paraula.
+  showDefinitionOnPick: boolean
 }
 
 export interface GameWithPlayers extends Game {
@@ -34,6 +40,10 @@ export async function createGame(
         language: opts.language,
         total_rounds: opts.totalRounds,
         score_funny_enabled: opts.scoreFunnyEnabled,
+        score_guess_real: opts.pointsGuessReal,
+        score_deceived: opts.pointsDeceived,
+        score_funniest: opts.pointsFunniest,
+        show_definition_on_pick: opts.showDefinitionOnPick,
         status: 'lobby',
         current_round: 0,
       })
@@ -155,6 +165,40 @@ export async function kickPlayer(playerId: string): Promise<void> {
 /** Avorta la partida (només host): la torna a l'estat de lobby finalitzat. */
 export async function abortGame(gameId: string): Promise<void> {
   const { error } = await supabase.from('games').update({ status: 'finished' }).eq('id', gameId)
+  if (error) throw error
+}
+
+/** Opcions editables d'una partida des del lobby (només host). */
+export interface UpdateGameOptions {
+  language: string
+  totalRounds: number
+  scoreFunnyEnabled: boolean
+  showDefinitionOnPick: boolean
+  pointsGuessReal: number
+  pointsDeceived: number
+  pointsFunniest: number
+}
+
+/**
+ * Actualitza les opcions de la partida des del lobby (només host). El realtime
+ * propaga els canvis a tots els dispositius.
+ */
+export async function updateGameOptions(
+  gameId: string,
+  opts: UpdateGameOptions
+): Promise<void> {
+  const { error } = await supabase
+    .from('games')
+    .update({
+      language: opts.language,
+      total_rounds: opts.totalRounds,
+      score_funny_enabled: opts.scoreFunnyEnabled,
+      show_definition_on_pick: opts.showDefinitionOnPick,
+      score_guess_real: opts.pointsGuessReal,
+      score_deceived: opts.pointsDeceived,
+      score_funniest: opts.pointsFunniest,
+    })
+    .eq('id', gameId)
   if (error) throw error
 }
 

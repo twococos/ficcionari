@@ -10,6 +10,7 @@ import { useTransfers } from './useTransfers'
 import { useKickRedirect } from './useKickRedirect'
 import { GameHeader } from './GameHeader'
 import { HostControls } from './HostControls'
+import { FunnyBackground } from './FunnyBackground'
 import { fetchGameByCode } from '@/features/lobby/lobbyApi'
 import { getDeviceId } from '@/lib/device'
 import { normalizeCode } from '@/game/constants'
@@ -19,7 +20,8 @@ import { AnnounceWordPhase } from './phases/AnnounceWordPhase'
 import { WriteDefinitionPhase } from './phases/WriteDefinitionPhase'
 import { ReadingPhase } from './phases/ReadingPhase'
 import { VotingPhase } from './phases/VotingPhase'
-import { RevealPhase } from './phases/RevealPhase'
+import { RevealPhase, AUTO_ADVANCE_MS } from './phases/RevealPhase'
+import { ProgressBar } from './ProgressBar'
 
 export function GamePage() {
   const { t } = useTranslation()
@@ -31,6 +33,7 @@ export function GamePage() {
   const round = useGameStore((s) => s.round)
   const players = useGameStore((s) => s.players)
   const isHost = useGameStore((s) => s.isHost)
+  const isNarrator = useGameStore((s) => s.isNarrator)
   const setSession = useGameStore((s) => s.setSession)
 
   const [loading, setLoading] = useState(!game || game.code !== code)
@@ -108,6 +111,7 @@ export function GamePage() {
 
   return (
     <ScreenLayout showLanguage={false} onBack={() => navigate('/')}>
+      <FunnyBackground active={round?.phase === 'voting_funny'} />
       <GameHeader />
       {!round ? (
         <p className="text-center text-white/60">{t('common.loading')}</p>
@@ -115,6 +119,15 @@ export function GamePage() {
         <PhaseView phase={round.phase} />
       )}
       <HostControls />
+
+      {/* Barra d'auto-avanç per als jugadors (no narrador) a la pantalla de
+          resultats. Va aquí, fora del contenidor animat de la fase, perquè el
+          `fixed` s'ancori al viewport i no es mogui amb el scroll. */}
+      {round?.phase === 'reveal' && !isNarrator() && (
+        <div className="fixed inset-x-0 bottom-0 z-20">
+          <ProgressBar durationMs={AUTO_ADVANCE_MS} variant="bar" flush />
+        </div>
+      )}
     </ScreenLayout>
   )
 }

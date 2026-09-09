@@ -6,7 +6,7 @@
 
 :root {
   color-scheme: light;
-  --color-primary: #0058f8;
+  --color-primary: #0060f4;
   --color-primary-dark: #001048;
   --color-accent: #f8c800;
   --color-white: #ffffff;
@@ -71,4 +71,58 @@ button {
   to {
     transform: scaleY(1);
   }
+}
+
+/* Bombolla que s'expandeix per revelar el fons accent (votació més graciosa) */
+@keyframes bubbleIn {
+  from {
+    clip-path: circle(0% at 50% 60%);
+  }
+  to {
+    clip-path: circle(150% at 50% 60%);
+  }
+}
+
+/* Bombolla que es contreu en tornar al fons blau */
+@keyframes bubbleOut {
+  from {
+    clip-path: circle(150% at 50% 60%);
+  }
+  to {
+    clip-path: circle(0% at 50% 60%);
+  }
+}
+
+/* Ratlles diagonals en moviment (barra de progrés festiva) */
+@keyframes stripesMove {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 0;
+  }
+}
+
+/* Ompliment de la barra de progrés (0% → 100% en la durada indicada),
+   d'esquerra a dreta. */
+@keyframes progressGrow {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Classe reutilitzable per al patró de ratlles accent */
+.ficc-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-accent),
+    var(--color-accent) 10px,
+    color-mix(in srgb, var(--color-accent) 75%, #ffffff) 10px,
+    color-mix(in srgb, var(--color-accent) 75%, #ffffff) 20px
+  );
+  background-size: 40px 40px;
+  animation: stripesMove 0.6s linear infinite;
 }

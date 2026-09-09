@@ -3,6 +3,36 @@
 import { POINTS } from './constants'
 import type { Definition, Vote } from '@/lib/database.types'
 
+/** Valors de punts d'una partida (encertar / enganyar / més graciosa). */
+export interface PointsConfig {
+  guessReal: number
+  deceived: number
+  funniest: number
+}
+
+/** Punts per defecte (fallback) a partir de la constant POINTS. */
+const DEFAULT_POINTS_CONFIG: PointsConfig = {
+  guessReal: POINTS.GUESS_REAL,
+  deceived: POINTS.PER_DECEIVED,
+  funniest: POINTS.FUNNIEST,
+}
+
+/**
+ * Extreu la configuració de punts d'una partida, amb fallback als defaults per a
+ * partides antigues que encara no tinguin les columnes (valors undefined).
+ */
+export function pointsFromGame(game: {
+  score_guess_real?: number
+  score_deceived?: number
+  score_funniest?: number
+}): PointsConfig {
+  return {
+    guessReal: game.score_guess_real ?? DEFAULT_POINTS_CONFIG.guessReal,
+    deceived: game.score_deceived ?? DEFAULT_POINTS_CONFIG.deceived,
+    funniest: game.score_funniest ?? DEFAULT_POINTS_CONFIG.funniest,
+  }
+}
+
 export interface RoundScoreDetail {
   playerId: string
   /** Punts per haver encertat la definició real. */
@@ -20,7 +50,8 @@ export interface RoundScoreResult {
   byPlayer: Record<string, RoundScoreDetail>
   /** Id de la definició real. */
   realDefinitionId: string | null
-  /** Ids de les definicions guanyadores de "més graciosa" (pot haver-hi empat). */
+  /** Id de la definició guanyadora de "més graciosa" (buit si hi ha empat: no
+   *  puntua ningú i no es corona cap definició). */
   funniestDefinitionIds: string[]
 }
 
@@ -38,7 +69,8 @@ function emptyDetail(playerId: string): RoundScoreDetail {
 export function computeRoundScores(
   definitions: Definition[],
   votes: Vote[],
-  funnyEnabled: boolean
+  funnyEnabled: boolean,
+  points: PointsConfig = DEFAULT_POINTS_CONFIG
 ): RoundScoreResult {
   const byPlayer: Record<string, RoundScoreDetail> = {}
   const detail = (playerId: string) =>
@@ -49,20 +81,20 @@ export function computeRoundScores(
 
   const realVotes = votes.filter((v) => v.vote_type === 'real')
 
-  // 1) +3 a qui ha encertat la real
+  // 1) Punts a qui ha encertat la real
   for (const v of realVotes) {
     if (realId && v.definition_id === realId) {
-      detail(v.voter_player_id).guessedReal += POINTS.GUESS_REAL
+      detail(v.voter_player_id).guessedReal += points.guessReal
     }
   }
 
-  // 2) +1 a l'autor per cada vot 'real' rebut per una definició inventada
+  // 2) Punts a l'autor per cada vot 'real' rebut per una definició inventada
   //    (algú s'ha cregut la seva mentida).
   const defById = new Map(definitions.map((d) => [d.id, d]))
   for (const v of realVotes) {
     const def = defById.get(v.definition_id)
     if (def && !def.is_real && def.author_player_id) {
-      detail(def.author_player_id).deceived += POINTS.PER_DECEIVED
+      detail(def.author_player_id).deceived += points.deceived
     }
   }
 
@@ -77,11 +109,14 @@ export function computeRoundScores(
     let max = 0
     for (const c of counts.values()) max = Math.max(max, c)
     if (max > 0) {
-      funniestIds = [...counts.entries()].filter(([, c]) => c === max).map(([id]) => id)
-      for (const id of funniestIds) {
-        const def = defById.get(id)
+      const topIds = [...counts.entries()].filter(([, c]) => c === max).map(([id]) => id)
+      // En cas d'EMPAT a la més graciosa, ningú puntua ni es corona: només hi ha
+      // guanyadora si és única.
+      if (topIds.length === 1) {
+        funniestIds = topIds
+        const def = defById.get(topIds[0])
         if (def?.author_player_id) {
-          detail(def.author_player_id).funniest += POINTS.FUNNIEST
+          detail(def.author_player_id).funniest += points.funniest
         }
       }
     }

@@ -276,11 +276,18 @@ ficcionari/
 - Gestió de fi de partida i opció de "tornar a jugar" amb els mateixos jugadors.
 - **Entregable:** partida completa de N rondes amb podi final.
 
-### Fase 6 — Diccionari de qualitat (pipeline complet)
-- Script `build-dictionary.ts` complet: descàrrega, parseig, filtratge de paraules poc conegudes, neteja, generació de JSON.
-- Substituir el dataset reduït de proves per un dataset ampli i curat (ca + es).
-- Atribució de llicència CC BY-SA.
-- **Entregable:** diccionaris rics per a català i castellà.
+### Fase 6 — Diccionari de qualitat (pipeline complet) ✅ FET
+- Script `scripts/parse-dump.mjs`: processa EN STREAMING els dumps XML de
+  Wikimedia (pages-articles.xml.bz2) del Viccionari (ca) i Wikcionario (es),
+  amb parseig de wikitext (dos formats: `# def` a ca, `;N: def` a es), neteja
+  (plantilles, refs, entitats XML) i filtratge de qualitat (idioma correcte, no
+  flexions/noms propis/locucions, paraules poc conegudes).
+  - (Es va descartar l'API de MediaWiki: rate limits durs i ~0.3% de ràtio útil.)
+- Resultat: **ca ~21.700 / es ~50.000** paraules. Carregats SOTA DEMANDA (fora del
+  precache PWA, amb CacheFirst) perquè la instal·lació es mantingui lleugera.
+- Atribució CC BY-SA dins cada JSON i visible al peu de l'app.
+- Dumps a `_dumps/` (ignorat per git). Guia a `scripts/README.md`.
+- **Entregable:** diccionaris rics per a català i castellà. ✅
 
 ### Fase 7 — Poliment, reconnexió robusta i desplegament
 - Millores UX/animacions dins la línia de disseny (joguinós, arrodonit, colors vius).
