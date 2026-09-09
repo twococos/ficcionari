@@ -2,6 +2,8 @@
 // Guardem un device_id estable a localStorage; quan un jugador torna a obrir
 // l'app (mateix navegador), recuperem el seu lloc a la partida via aquest id.
 
+import { safeStorage } from './safeStorage'
+
 const DEVICE_ID_KEY = 'ficcionari-device-id'
 
 /**
@@ -19,10 +21,10 @@ function generateId(): string {
  * Retorna el device_id d'aquest dispositiu, creant-lo i persistint-lo si cal.
  */
 export function getDeviceId(): string {
-  let id = localStorage.getItem(DEVICE_ID_KEY)
+  let id = safeStorage.getItem(DEVICE_ID_KEY)
   if (!id) {
     id = generateId()
-    localStorage.setItem(DEVICE_ID_KEY, id)
+    safeStorage.setItem(DEVICE_ID_KEY, id)
   }
   return id
 }
@@ -31,13 +33,13 @@ export function getDeviceId(): string {
 const LAST_GAME_KEY = 'ficcionari-last-game'
 
 export function rememberLastGame(code: string): void {
-  localStorage.setItem(LAST_GAME_KEY, code)
+  safeStorage.setItem(LAST_GAME_KEY, code)
 }
 
 export function getLastGame(): string | null {
-  return localStorage.getItem(LAST_GAME_KEY)
+  return safeStorage.getItem(LAST_GAME_KEY)
 }
 
 export function forgetLastGame(): void {
-  localStorage.removeItem(LAST_GAME_KEY)
+  safeStorage.removeItem(LAST_GAME_KEY)
 }

@@ -1,7 +1,8 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import LanguageDetector from 'i18next-browser-languagedetector'
+import { LanguageDetectorModule } from 'i18next'
 
+import { safeStorage } from '@/lib/safeStorage'
 import caUi from './locales/ca/ui.json'
 import esUi from './locales/es/ui.json'
 
@@ -13,8 +14,26 @@ export const resources = {
   es: { ui: esUi },
 } as const
 
+const LANG_KEY = 'ficcionari-lang'
+
+/**
+ * Detector d'idioma propi basat en `safeStorage` (no en el detector de
+ * localStorage d'i18next). Motius:
+ *  - Robustesa: si l'accés a localStorage llança (Firefox Android amb protecció
+ *    de seguiment, mode privat…), no peta la càrrega inicial → evita la pàgina
+ *    en blanc. `safeStorage` cau a memòria en aquest cas.
+ *  - Idioma per defecte català: si no hi ha preferència desada, retornem res i
+ *    i18next cau al `fallbackLng` ('ca'), encara que el navegador sigui en
+ *    castellà.
+ */
+const safeDetector: LanguageDetectorModule = {
+  type: 'languageDetector',
+  detect: () => safeStorage.getItem(LANG_KEY) ?? undefined,
+  cacheUserLanguage: (lng) => safeStorage.setItem(LANG_KEY, lng),
+}
+
 i18n
-  .use(LanguageDetector)
+  .use(safeDetector)
   .use(initReactI18next)
   .init({
     resources,
@@ -24,14 +43,6 @@ i18n
     ns: ['ui'],
     interpolation: {
       escapeValue: false,
-    },
-    detection: {
-      // Només la preferència desada per l'usuari; si no n'hi ha, cau al
-      // fallbackLng ('ca'). Així el català és l'idioma per defecte encara que el
-      // navegador estigui en castellà (abans 'navigator' el forçava a 'es').
-      order: ['localStorage'],
-      lookupLocalStorage: 'ficcionari-lang',
-      caches: ['localStorage'],
     },
   })
 
