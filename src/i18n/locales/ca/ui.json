@@ -1,0 +1,151 @@
+{
+  "app": {
+    "name": "Ficcionari",
+    "tagline": "El joc del diccionari per jugar amb amics"
+  },
+  "language": {
+    "label": "Idioma",
+    "ca": "Català",
+    "es": "Castellà"
+  },
+  "home": {
+    "createGame": "Crear partida",
+    "joinGame": "Unir-se a una partida",
+    "howToPlay": "Com es juga",
+    "attribution": "Definicions del Viccionari i Wikcionario (CC BY-SA)"
+  },
+  "common": {
+    "next": "Següent",
+    "back": "Enrere",
+    "start": "Començar",
+    "cancel": "Cancel·lar",
+    "confirm": "Confirmar",
+    "loading": "Carregant…",
+    "error": "Hi ha hagut un error. Torna-ho a provar.",
+    "copy": "Copiar",
+    "copied": "Copiat!"
+  },
+  "create": {
+    "title": "Crear partida",
+    "yourName": "El teu nom",
+    "yourNamePlaceholder": "Com et diuen?",
+    "rounds": "Rondes",
+    "gameLanguage": "Idioma del joc",
+    "gameLanguageHint": "Idioma de les paraules i definicions",
+    "funnyMode": "Puntuar la definició més graciosa",
+    "funnyModeHint": "Una votació extra a la més divertida",
+    "createButton": "Crear partida"
+  },
+  "join": {
+    "title": "Unir-se a una partida",
+    "codeLabel": "Codi de la partida",
+    "codePlaceholder": "ABCD",
+    "yourName": "El teu nom",
+    "yourNamePlaceholder": "Com et diuen?",
+    "joinButton": "Entrar",
+    "notFound": "No s'ha trobat cap partida amb aquest codi.",
+    "invalidCode": "El codi ha de tenir 4 lletres."
+  },
+  "lobby": {
+    "title": "Sala d'espera",
+    "code": "Codi",
+    "shareHint": "Comparteix el codi o el QR perquè s'uneixin",
+    "scanQr": "Escaneja per unir-te",
+    "players": "Jugadors",
+    "host": "Amfitrió",
+    "you": "Tu",
+    "waitingForHost": "Esperant que l'amfitrió comenci la partida…",
+    "startGame": "Començar partida",
+    "needMorePlayers": "Calen almenys {{count}} jugadors per començar",
+    "shareLink": "Copiar enllaç",
+    "leave": "Sortir",
+    "kick": "Expulsar"
+  },
+  "host": {
+    "abort": "Acabar la partida",
+    "abortConfirm": "Segur que vols acabar la partida per a tothom?",
+    "abortYes": "Sí, acabar"
+  },
+  "game": {
+    "round": "Ronda {{current}} de {{total}}",
+    "narratorIs": "Narrador/a: {{name}}",
+    "youAreNarrator": "Ets el narrador/a d'aquest torn",
+    "waitingForNarrator": "Esperant el narrador/a…"
+  },
+  "pickWord": {
+    "title": "Tria una paraula",
+    "instruction": "Tira els daus fins que en trobis una que t'agradi. Els altres jugadors n'inventaran la definició.",
+    "rollDice": "Tirar els daus",
+    "rollAgain": "Tornar a tirar",
+    "chooseThis": "Triar aquesta",
+    "narratorPicking": "{{name}} està triant una paraula…"
+  },
+  "announce": {
+    "title": "Anuncia la paraula",
+    "yourWord": "La paraula és",
+    "realDefinition": "Definició real",
+    "readAloud": "Llegeix la paraula en veu alta. Quan estiguis, comença la ronda perquè tothom escrigui la seva definició.",
+    "startWriting": "Que escriguin!",
+    "narratorAnnouncing": "{{name}} anuncia la paraula…"
+  },
+  "write": {
+    "title": "Escriu la teva definició",
+    "wordIs": "Paraula",
+    "placeholder": "Inventa't una definició convincent…",
+    "submit": "Enviar definició",
+    "submitted": "Definició enviada!",
+    "waitingOthers": "Esperant la resta de jugadors…",
+    "edit": "Editar",
+    "narratorWaiting": "Els jugadors estan escrivint…",
+    "submittedCount": "{{done}} de {{total}} han enviat",
+    "forceNext": "Passar igualment"
+  },
+  "read": {
+    "title": "Llegeix les definicions",
+    "instruction": "Llegeix totes les definicions en veu alta (barrejades). Quan acabis, comença la votació.",
+    "startVoting": "A votar!",
+    "narratorReading": "{{name}} està llegint les definicions…"
+  },
+  "voteReal": {
+    "title": "Quina és la real?",
+    "instruction": "Vota la definició que creus que és la de veritat.",
+    "voted": "Has votat!",
+    "waitingOthers": "Esperant que tothom voti…",
+    "ownDefinition": "La teva",
+    "narratorWaiting": "Els jugadors estan votant la definició real…"
+  },
+  "voteFunny": {
+    "title": "I la més graciosa?",
+    "instruction": "Ara vota la definició que t'ha fet més gràcia.",
+    "voted": "Has votat!",
+    "waitingOthers": "Esperant que tothom voti…"
+  },
+  "reveal": {
+    "title": "Resultats de la ronda",
+    "theRealOne": "La definició real",
+    "writtenBy": "de {{name}}",
+    "nobody": "Ningú",
+    "votesReceived_one": "{{count}} vot",
+    "votesReceived_other": "{{count}} vots",
+    "funniest": "La més graciosa",
+    "roundPoints": "Punts d'aquesta ronda",
+    "pointGuessed": "+{{points}} per encertar la real",
+    "pointDeceived": "+{{points}} per enganyar {{count}}",
+    "pointFunniest": "+{{points}} per la més graciosa",
+    "noPoints": "Sense punts aquesta ronda",
+    "scoreboard": "Classificació",
+    "nextRound": "Ronda següent",
+    "waitingNarratorNext": "Esperant que {{name}} continuï…",
+    "finishGame": "Veure el podi"
+  },
+  "podium": {
+    "title": "Fi de la partida!",
+    "winner": "Guanya {{name}}!",
+    "tie": "Empat a dalt!",
+    "points_one": "{{count}} punt",
+    "points_other": "{{count}} punts",
+    "playAgain": "Tornar a jugar",
+    "waitingHostRestart": "Esperant que l'amfitrió decideixi…",
+    "exit": "Sortir"
+  }
+}

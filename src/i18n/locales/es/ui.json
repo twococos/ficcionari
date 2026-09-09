@@ -1,0 +1,151 @@
+{
+  "app": {
+    "name": "Ficcionari",
+    "tagline": "El juego del diccionario para jugar con amigos"
+  },
+  "language": {
+    "label": "Idioma",
+    "ca": "Catalán",
+    "es": "Castellano"
+  },
+  "home": {
+    "createGame": "Crear partida",
+    "joinGame": "Unirse a una partida",
+    "howToPlay": "Cómo se juega",
+    "attribution": "Definiciones del Viccionari y Wikcionario (CC BY-SA)"
+  },
+  "common": {
+    "next": "Siguiente",
+    "back": "Atrás",
+    "start": "Empezar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "loading": "Cargando…",
+    "error": "Ha ocurrido un error. Inténtalo de nuevo.",
+    "copy": "Copiar",
+    "copied": "¡Copiado!"
+  },
+  "create": {
+    "title": "Crear partida",
+    "yourName": "Tu nombre",
+    "yourNamePlaceholder": "¿Cómo te llamas?",
+    "rounds": "Rondas",
+    "gameLanguage": "Idioma del juego",
+    "gameLanguageHint": "Idioma de las palabras y definiciones",
+    "funnyMode": "Puntuar la definición más graciosa",
+    "funnyModeHint": "Una votación extra a la más divertida",
+    "createButton": "Crear partida"
+  },
+  "join": {
+    "title": "Unirse a una partida",
+    "codeLabel": "Código de la partida",
+    "codePlaceholder": "ABCD",
+    "yourName": "Tu nombre",
+    "yourNamePlaceholder": "¿Cómo te llamas?",
+    "joinButton": "Entrar",
+    "notFound": "No se ha encontrado ninguna partida con ese código.",
+    "invalidCode": "El código debe tener 4 letras."
+  },
+  "lobby": {
+    "title": "Sala de espera",
+    "code": "Código",
+    "shareHint": "Comparte el código o el QR para que se unan",
+    "scanQr": "Escanea para unirte",
+    "players": "Jugadores",
+    "host": "Anfitrión",
+    "you": "Tú",
+    "waitingForHost": "Esperando a que el anfitrión empiece la partida…",
+    "startGame": "Empezar partida",
+    "needMorePlayers": "Se necesitan al menos {{count}} jugadores para empezar",
+    "shareLink": "Copiar enlace",
+    "leave": "Salir",
+    "kick": "Expulsar"
+  },
+  "host": {
+    "abort": "Terminar la partida",
+    "abortConfirm": "¿Seguro que quieres terminar la partida para todos?",
+    "abortYes": "Sí, terminar"
+  },
+  "game": {
+    "round": "Ronda {{current}} de {{total}}",
+    "narratorIs": "Narrador/a: {{name}}",
+    "youAreNarrator": "Eres el narrador/a de este turno",
+    "waitingForNarrator": "Esperando al narrador/a…"
+  },
+  "pickWord": {
+    "title": "Elige una palabra",
+    "instruction": "Tira los dados hasta encontrar una que te guste. Los demás jugadores inventarán su definición.",
+    "rollDice": "Tirar los dados",
+    "rollAgain": "Volver a tirar",
+    "chooseThis": "Elegir esta",
+    "narratorPicking": "{{name}} está eligiendo una palabra…"
+  },
+  "announce": {
+    "title": "Anuncia la palabra",
+    "yourWord": "La palabra es",
+    "realDefinition": "Definición real",
+    "readAloud": "Lee la palabra en voz alta. Cuando estés, empieza la ronda para que todos escriban su definición.",
+    "startWriting": "¡Que escriban!",
+    "narratorAnnouncing": "{{name}} anuncia la palabra…"
+  },
+  "write": {
+    "title": "Escribe tu definición",
+    "wordIs": "Palabra",
+    "placeholder": "Invéntate una definición convincente…",
+    "submit": "Enviar definición",
+    "submitted": "¡Definición enviada!",
+    "waitingOthers": "Esperando al resto de jugadores…",
+    "edit": "Editar",
+    "narratorWaiting": "Los jugadores están escribiendo…",
+    "submittedCount": "{{done}} de {{total}} han enviado",
+    "forceNext": "Pasar igualmente"
+  },
+  "read": {
+    "title": "Lee las definiciones",
+    "instruction": "Lee todas las definiciones en voz alta (mezcladas). Cuando acabes, empieza la votación.",
+    "startVoting": "¡A votar!",
+    "narratorReading": "{{name}} está leyendo las definiciones…"
+  },
+  "voteReal": {
+    "title": "¿Cuál es la real?",
+    "instruction": "Vota la definición que crees que es la de verdad.",
+    "voted": "¡Has votado!",
+    "waitingOthers": "Esperando a que todos voten…",
+    "ownDefinition": "La tuya",
+    "narratorWaiting": "Los jugadores están votando la definición real…"
+  },
+  "voteFunny": {
+    "title": "¿Y la más graciosa?",
+    "instruction": "Ahora vota la definición que más gracia te ha hecho.",
+    "voted": "¡Has votado!",
+    "waitingOthers": "Esperando a que todos voten…"
+  },
+  "reveal": {
+    "title": "Resultados de la ronda",
+    "theRealOne": "La definición real",
+    "writtenBy": "de {{name}}",
+    "nobody": "Nadie",
+    "votesReceived_one": "{{count}} voto",
+    "votesReceived_other": "{{count}} votos",
+    "funniest": "La más graciosa",
+    "roundPoints": "Puntos de esta ronda",
+    "pointGuessed": "+{{points}} por acertar la real",
+    "pointDeceived": "+{{points}} por engañar a {{count}}",
+    "pointFunniest": "+{{points}} por la más graciosa",
+    "noPoints": "Sin puntos esta ronda",
+    "scoreboard": "Clasificación",
+    "nextRound": "Ronda siguiente",
+    "waitingNarratorNext": "Esperando a que {{name}} continúe…",
+    "finishGame": "Ver el podio"
+  },
+  "podium": {
+    "title": "¡Fin de la partida!",
+    "winner": "¡Gana {{name}}!",
+    "tie": "¡Empate en lo más alto!",
+    "points_one": "{{count}} punto",
+    "points_other": "{{count}} puntos",
+    "playAgain": "Volver a jugar",
+    "waitingHostRestart": "Esperando a que el anfitrión decida…",
+    "exit": "Salir"
+  }
+}
