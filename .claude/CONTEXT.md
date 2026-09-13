@@ -168,9 +168,12 @@ Columnes rellevants afegides després de l'esquema inicial:
 - `games.score_guess_real` / `score_deceived` / `score_funniest` (int, default 1) — punts
   configurables (migració 0005).
 - `games.show_definition_on_pick` (bool, default false) — el narrador veu la definició del
-  diccionari mentre tria paraula (migració 0006).
+  diccionari mentre tria paraula (migració 0006, **executada**).
 - `rounds.scored` (bool) — marca de puntuació aplicada (migració 0003).
-- Funció `increment_player_score(p_player_id uuid, p_delta int)` (migració 0006).
+- Funció `increment_player_score(p_player_id uuid, p_delta int)` (migració 0006, **executada**).
+
+**Totes les migracions (0001–0006) estan aplicades a la BD de producció.** La propera columna
+o funció nova serà la 0007.
 
 **Migracions = SQL manual.** No hi ha CLI de Supabase vinculada; cada fitxer a
 `supabase/migrations/` s'executa a mà al **SQL Editor** del dashboard. Escriu-les
@@ -275,7 +278,7 @@ Firefox per Android (protecció de seguiment, mode privat) pot llançar només d
 - Tandes posteriors (aquesta conversa i següents, sense fitxer de pla dedicat): editar opcions
   al lobby, `CheckIcon`, empat graciós sense punts, retocs de la barra flush, `safeStorage`.
 
-**Pendent conegut**: la **migració 0006** s'ha d'haver executat al SQL Editor perquè funcionin
-`show_definition_on_pick` i la suma atòmica de punts. Els canvis d'aquestes tandes encara no
-tenen per què estar committejats/desplegats — comprova `git status` i pregunta abans de fer
-commit.
+**Estat de la BD**: totes les migracions (0001–0006) estan **aplicades** a producció, inclosa
+la 0006 (`show_definition_on_pick` + `increment_player_score`). Els canvis de codi d'aquestes
+tandes poden no estar committejats/desplegats encara — comprova `git status` i pregunta abans
+de fer commit.
