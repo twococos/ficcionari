@@ -8,12 +8,24 @@ interface ScreenLayoutProps {
   title?: string
   onBack?: () => void
   showLanguage?: boolean
+  /**
+   * Text del botó d'enrere. A les pantalles de partida convé dir explícitament
+   * que se'n surt, perquè "Enrere" no deixa clar que abandones el joc.
+   */
+  backLabel?: string
 }
 
-export function ScreenLayout({ children, title, onBack, showLanguage = true }: ScreenLayoutProps) {
+export function ScreenLayout({
+  children,
+  title,
+  onBack,
+  showLanguage = true,
+  backLabel,
+}: ScreenLayoutProps) {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const handleBack = onBack ?? (() => navigate('/'))
+  const label = backLabel ?? t('common.back')
 
   return (
     <div className="flex min-h-screen flex-col p-6">
@@ -21,9 +33,9 @@ export function ScreenLayout({ children, title, onBack, showLanguage = true }: S
         <button
           onClick={handleBack}
           className="rounded-full px-3 py-1.5 text-sm font-bold text-white/80 hover:text-white"
-          aria-label={t('common.back')}
+          aria-label={label}
         >
-          ← {t('common.back')}
+          ← {label}
         </button>
         {showLanguage && <LanguageSwitcher />}
       </header>

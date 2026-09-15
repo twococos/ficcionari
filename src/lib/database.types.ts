@@ -28,6 +28,13 @@ export interface Game {
   score_funniest: number
   // Si el narrador veu la definició del diccionari mentre tria paraula.
   show_definition_on_pick: boolean
+  // Als votants només se'ls mostren números; el text el llegeix el narrador.
+  hide_definitions_on_vote: boolean
+  // Temps límit per escriure definicions, en segons. 0 = desactivat.
+  write_time_limit_seconds: number
+  // Voltes (1 volta = tothom fa de narrador un cop). total_rounds es calcula
+  // en començar la partida: total_laps * nombre de jugadors.
+  total_laps: number
   status: GameStatus
   current_round: number
   created_at: string
@@ -54,6 +61,8 @@ export interface Round {
   real_definition: string | null
   phase: RoundPhase
   scored: boolean
+  /** Quan s'ha entrat a la fase actual: ancora els comptes enrere al servidor. */
+  phase_started_at: string
   created_at: string
 }
 

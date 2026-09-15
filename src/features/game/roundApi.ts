@@ -1,5 +1,13 @@
 import { supabase } from '@/lib/supabase'
-import type { Game, Player, Round, RoundPhase, Definition, Vote } from '@/lib/database.types'
+import type {
+  Game,
+  Player,
+  Round,
+  RoundPhase,
+  Definition,
+  Vote,
+  VoteType,
+} from '@/lib/database.types'
 import { computeRoundScores, pointsFromGame } from '@/game/scoring'
 
 // -----------------------------------------------------------------------------
@@ -68,15 +76,38 @@ export async function chooseWord(
 ): Promise<void> {
   const { error } = await supabase
     .from('rounds')
-    .update({ word, real_definition: realDefinition, phase: 'announcing_word' })
+    .update({
+      word,
+      real_definition: realDefinition,
+      phase: 'announcing_word',
+      phase_started_at: new Date().toISOString(),
+    })
     .eq('id', roundId)
   if (error) throw error
 }
 
-/** Avança la fase de la ronda (usat pel narrador per passar de pantalla). */
+/**
+ * Avança la fase de la ronda (usat pel narrador per passar de pantalla).
+ * Deixa constància de quan s'hi ha entrat perquè els comptes enrere (com el
+ * temps límit per escriure) es puguin ancorar a un instant compartit i no al
+ * muntatge del component: qui recarregui la pàgina veu el temps restant real.
+ */
 export async function setRoundPhase(roundId: string, phase: RoundPhase): Promise<void> {
-  const { error } = await supabase.from('rounds').update({ phase }).eq('id', roundId)
+  const { error } = await supabase
+    .from('rounds')
+    .update({ phase, phase_started_at: new Date().toISOString() })
+    .eq('id', roundId)
   if (error) throw error
+}
+
+/**
+ * Fase que segueix una votació: després de la real ve la graciosa si el mode
+ * està actiu, i si no, els resultats. Compartit entre la transició automàtica
+ * (useRoundOrchestration) i el botó manual de "tancar votació" del narrador,
+ * perquè les dues rutes no puguin divergir.
+ */
+export function nextPhaseAfterVote(voteType: VoteType, funnyEnabled: boolean): RoundPhase {
+  return voteType === 'real' && funnyEnabled ? 'voting_funny' : 'reveal'
 }
 
 /**
@@ -89,6 +120,7 @@ export async function reassignNarrator(roundId: string, newNarratorId: string): 
     .update({
       narrator_player_id: newNarratorId,
       phase: 'narrator_picking_word',
+      phase_started_at: new Date().toISOString(),
       word: null,
       real_definition: null,
       scored: false,
@@ -116,10 +148,7 @@ export async function submitDefinition(
     .maybeSingle()
 
   if (existing) {
-    const { error } = await supabase
-      .from('definitions')
-      .update({ text })
-      .eq('id', existing.id)
+    const { error } = await supabase.from('definitions').update({ text }).eq('id', existing.id)
     if (error) throw error
   } else {
     const { error } = await supabase
@@ -133,10 +162,7 @@ export async function submitDefinition(
  * Insereix la definició real com una "definició" més (author null, is_real true)
  * per barrejar-la amb les inventades a l'hora de votar. Idempotent.
  */
-export async function ensureRealDefinition(
-  roundId: string,
-  realText: string
-): Promise<void> {
+export async function ensureRealDefinition(roundId: string, realText: string): Promise<void> {
   const { data: existing } = await supabase
     .from('definitions')
     .select('id')
@@ -222,10 +248,7 @@ export async function advanceToNextRound(
 ): Promise<'next' | 'finished'> {
   const isLast = currentRound.round_number >= game.total_rounds
   if (isLast) {
-    const { error } = await supabase
-      .from('games')
-      .update({ status: 'finished' })
-      .eq('id', game.id)
+    const { error } = await supabase.from('games').update({ status: 'finished' }).eq('id', game.id)
     if (error) throw error
     return 'finished'
   }

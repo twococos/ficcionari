@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { ScreenLayout } from '@/components/ScreenLayout'
 import { TextField } from '@/components/TextField'
 import { Button } from '@/components/Button'
-import { DEFAULT_ROUNDS, DEFAULT_POINTS } from '@/game/constants'
 import { type SupportedLanguage } from '@/i18n/config'
 import { createGame } from './lobbyApi'
-import { GameOptionsFields, type GameOptionsValue } from './GameOptionsFields'
+import { GameOptionsFields } from './GameOptionsFields'
+import { defaultGameOptions, gameOptionsToApi, type GameOptionsValue } from './gameOptions'
 import { useGameStore } from '@/store/gameStore'
 
 export function CreateGamePage() {
@@ -16,15 +16,9 @@ export function CreateGamePage() {
   const setSession = useGameStore((s) => s.setSession)
 
   const [name, setName] = useState('')
-  const [options, setOptions] = useState<GameOptionsValue>({
-    language: (i18n.resolvedLanguage as SupportedLanguage) ?? 'ca',
-    rounds: DEFAULT_ROUNDS,
-    funnyMode: false,
-    showDefinitionOnPick: false,
-    pointsGuessReal: DEFAULT_POINTS.guessReal,
-    pointsDeceived: DEFAULT_POINTS.deceived,
-    pointsFunniest: DEFAULT_POINTS.funniest,
-  })
+  const [options, setOptions] = useState<GameOptionsValue>(() =>
+    defaultGameOptions((i18n.resolvedLanguage as SupportedLanguage) ?? 'ca')
+  )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,14 +32,8 @@ export function CreateGamePage() {
     setError(null)
     try {
       const { game, player } = await createGame({
-        language: options.language,
-        totalRounds: options.rounds,
-        scoreFunnyEnabled: options.funnyMode,
+        ...gameOptionsToApi(options),
         hostNickname: name.trim(),
-        pointsGuessReal: options.pointsGuessReal,
-        pointsDeceived: options.pointsDeceived,
-        pointsFunniest: options.pointsFunniest,
-        showDefinitionOnPick: options.showDefinitionOnPick,
       })
       setSession(game, player.id, [player])
       navigate(`/lobby/${game.code}`)

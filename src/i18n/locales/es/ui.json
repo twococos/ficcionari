@@ -23,13 +23,14 @@
     "loading": "Cargando…",
     "error": "Ha ocurrido un error. Inténtalo de nuevo.",
     "copy": "Copiar",
-    "copied": "¡Copiado!"
+    "copied": "¡Copiado!",
+    "saveImage": "Guardar como imagen",
+    "leaveGame": "Salir de la partida"
   },
   "create": {
     "title": "Crear partida",
     "yourName": "Tu nombre",
     "yourNamePlaceholder": "¿Cómo te llamas?",
-    "rounds": "Rondas",
     "gameLanguage": "Idioma del juego",
     "gameLanguageHint": "Idioma de las palabras y definiciones",
     "funnyMode": "Puntuar la definición más graciosa",
@@ -40,7 +41,15 @@
     "pointsGuessReal": "Acertar la definición real",
     "pointsDeceived": "Que voten tu definición",
     "pointsFunniest": "Definición más graciosa",
-    "createButton": "Crear partida"
+    "createButton": "Crear partida",
+    "laps": "Vueltas",
+    "lapsHint": "Una vuelta = todos los jugadores narran una vez",
+    "lapsRoundsHint": "{{rounds}} rondas con {{players}} jugadores",
+    "hideDefinitions": "Ocultar las definiciones al votar",
+    "hideDefinitionsHint": "Los jugadores solo ven números; las lee el narrador",
+    "writeTimeLimit": "Tiempo límite para escribir",
+    "writeTimeLimitHint": "Todos tienen el mismo tiempo para inventar la definición",
+    "writeTimeLimitMinutes": "Minutos"
   },
   "join": {
     "title": "Unirse a una partida",
@@ -106,7 +115,8 @@
     "narratorWaiting": "Los jugadores están escribiendo…",
     "submittedCount": "{{done}} de {{total}} han enviado",
     "forceNext": "Pasar igualmente",
-    "hurryUp": "¡Eres el último! Date prisa…"
+    "hurryUp": "¡Eres el último! Date prisa…",
+    "timeLeft": "Tiempo para escribir"
   },
   "read": {
     "title": "Lee las definiciones",
@@ -126,7 +136,8 @@
     "title": "¿Y la más graciosa?",
     "instruction": "Ahora vota la definición que más gracia te ha hecho.",
     "voted": "¡Has votado!",
-    "waitingOthers": "Esperando a que todos voten…"
+    "waitingOthers": "Esperando a que todos voten…",
+    "narratorWaiting": "Los jugadores están votando la más graciosa…"
   },
   "reveal": {
     "title": "Resultados de la ronda",
@@ -155,5 +166,9 @@
     "playAgain": "Volver a jugar",
     "waitingHostRestart": "Esperando a que el anfitrión decida…",
     "exit": "Salir"
+  },
+  "vote": {
+    "votedCount": "{{done}} de {{total}} han votado",
+    "closeVoting": "Cerrar votación"
   }
 }

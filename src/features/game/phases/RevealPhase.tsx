@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/Card'
 import { Button } from '@/components/Button'
@@ -8,10 +8,9 @@ import { computeRoundScores, pointsFromGame } from '@/game/scoring'
 import { advanceToNextRound } from '../roundApi'
 import { RoundPointsBreakdown } from '../RoundPointsBreakdown'
 import { Scoreboard } from '../Scoreboard'
-import { ProgressBar } from '../ProgressBar'
-
-// Temps abans que els resultats avancin automàticament a la ronda següent.
-export const AUTO_ADVANCE_MS = 20000
+import { WordBanner } from '../WordBanner'
+import { DownloadButton } from '../DownloadButton'
+import { useDownloadImage, safeFileName } from '../useDownloadImage'
 
 // Pantalla de resultats de la ronda: revela la real, l'autoria i els vots de
 // cada definició, i mostra els punts guanyats + la classificació acumulada.
@@ -37,6 +36,13 @@ export function RevealPhase() {
     [definitions, votes, game]
   )
 
+  // Desar la ronda com a imatge (per conservar-ne les èpiques).
+  const fileName = useCallback(
+    () => `ficcionari-ronda-${round?.round_number ?? 0}-${safeFileName(round?.word ?? '')}.png`,
+    [round?.round_number, round?.word]
+  )
+  const capture = useDownloadImage(fileName)
+
   const advance = async () => {
     if (!game || !round) return
     setAdvancing(true)
@@ -48,18 +54,6 @@ export function RevealPhase() {
       setAdvancing(false)
     }
   }
-  // Ref sempre actualitzat perquè el timeout cridi la versió vigent.
-  const advanceRef = useRef(advance)
-  advanceRef.current = advance
-
-  // Auto-avanç: passats 20s, el NARRADOR avança sol (anti-cursa: només ell).
-  const roundId = round?.id
-  const amNarrator = isNarrator()
-  useEffect(() => {
-    if (!roundId || !amNarrator) return
-    const timer = setTimeout(() => void advanceRef.current(), AUTO_ADVANCE_MS)
-    return () => clearTimeout(timer)
-  }, [roundId, amNarrator])
 
   if (!round || !game) return null
 
@@ -76,74 +70,81 @@ export function RevealPhase() {
 
   return (
     <div className="flex flex-1 flex-col gap-5">
-      <h2 className="text-center text-2xl font-black text-white">{t('reveal.title')}</h2>
+      {/* Tot el que entra a la imatge descarregable va dins d'aquest node. */}
+      <div ref={capture.ref} className="flex flex-col gap-5">
+        <h2 className="text-center text-2xl font-black text-white">{t('reveal.title')}</h2>
 
-      {/* Definicions revelades */}
-      <ul className="flex flex-col gap-3">
-        {ordered.map((d, i) => {
-          const authorName = d.is_real ? null : nameOf(d.author_player_id)
-          return (
-            <li
-              key={d.id}
-              className="animate-[fadeIn_0.4s_ease-out_both]"
-              style={{ animationDelay: `${i * 90}ms` }}
-            >
-              <Card className={d.is_real ? 'ring-2 ring-accent' : ''}>
-                <p className="text-white">{d.text}</p>
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                  {d.is_real ? (
-                    <span className="font-bold text-accent">✔ {t('reveal.theRealOne')}</span>
-                  ) : (
-                    <span className="text-white/70">
-                      {t('reveal.writtenBy', { name: authorName ?? t('reveal.nobody') })}
+        {/* A la pantalla la paraula ja la mostra el banner de GamePage; aquí hi
+            és només perquè surti a la imatge descarregada. */}
+        {round.word && (
+          <div data-capture-only>
+            <WordBanner word={round.word} compact />
+          </div>
+        )}
+
+        {/* Definicions revelades */}
+        <ul className="flex flex-col gap-3">
+          {ordered.map((d, i) => {
+            const authorName = d.is_real ? null : nameOf(d.author_player_id)
+            return (
+              <li
+                key={d.id}
+                className="animate-[fadeIn_0.4s_ease-out_both]"
+                style={{ animationDelay: `${i * 90}ms` }}
+              >
+                <Card className={d.is_real ? 'ring-2 ring-accent' : ''}>
+                  <p className="text-white">{d.text}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                    {d.is_real ? (
+                      <span className="font-bold text-accent">✔ {t('reveal.theRealOne')}</span>
+                    ) : (
+                      <span className="text-white/70">
+                        {t('reveal.writtenBy', { name: authorName ?? t('reveal.nobody') })}
+                      </span>
+                    )}
+                    <span className="text-white/50">
+                      {t('reveal.votesReceived', { count: votesFor(d.id) })}
                     </span>
-                  )}
-                  <span className="text-white/50">
-                    {t('reveal.votesReceived', { count: votesFor(d.id) })}
-                  </span>
-                  {funnyEnabled && isFunniest(d.id) && (
-                    <span className="rounded-full bg-accent/20 px-2 py-0.5 font-bold text-accent">
-                      😂 {t('reveal.funniest')}
-                    </span>
-                  )}
-                </div>
-              </Card>
-            </li>
-          )
-        })}
-      </ul>
+                    {funnyEnabled && isFunniest(d.id) && (
+                      <span className="rounded-full bg-accent/20 px-2 py-0.5 font-bold text-accent">
+                        😂 {t('reveal.funniest')}
+                      </span>
+                    )}
+                  </div>
+                </Card>
+              </li>
+            )
+          })}
+        </ul>
 
-      {/* Punts d'aquesta ronda */}
-      <RoundPointsBreakdown scores={scores} />
+        {/* Punts d'aquesta ronda */}
+        <RoundPointsBreakdown scores={scores} />
 
-      {/* Classificació acumulada */}
-      <Scoreboard />
+        {/* Classificació acumulada */}
+        <Scoreboard />
+      </div>
 
-      {/* Navegació: el narrador avança a la ronda següent o al podi final */}
+      {/* Navegació: el narrador avança a la ronda següent o al podi final. El
+          botó de desar la imatge l'acompanya, petit, a l'esquerra. */}
       {isNarrator() ? (
-        <Button
-          variant="accent"
-          onClick={advance}
-          disabled={advancing}
-          className="relative w-full overflow-hidden"
-        >
-          {/* Barra de progrés festiva com a fons animat dins el botó */}
-          {!advancing && <ProgressBar durationMs={AUTO_ADVANCE_MS} variant="fill" />}
-          <span className="relative z-10">
+        <div className="flex items-stretch gap-3">
+          <DownloadButton onClick={capture.download} busy={capture.busy} />
+          <Button variant="accent" onClick={advance} disabled={advancing} className="flex-1">
             {advancing
               ? t('common.loading')
               : isLastRound
                 ? t('reveal.finishGame')
                 : t('reveal.nextRound')}
-          </span>
-        </Button>
+          </Button>
+        </div>
       ) : (
-        <p className="text-center text-sm text-white/60">
-          {t('reveal.waitingNarratorNext', { name: narrator()?.nickname ?? '' })}
-        </p>
+        <div className="flex flex-col gap-3">
+          <DownloadButton onClick={capture.download} busy={capture.busy} fullWidth />
+          <p className="text-center text-sm text-white/60">
+            {t('reveal.waitingNarratorNext', { name: narrator()?.nickname ?? '' })}
+          </p>
+        </div>
       )}
-      {/* La barra de progrés dels jugadors es renderitza a GamePage, fora del
-          contenidor animat, perquè el `fixed` s'ancori de veritat al viewport. */}
     </div>
   )
 }

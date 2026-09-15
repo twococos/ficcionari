@@ -5,7 +5,8 @@ import type { Game, Player } from '@/lib/database.types'
 
 export interface CreateGameOptions {
   language: string
-  totalRounds: number
+  // Voltes: total_rounds es calcula en començar (voltes × jugadors).
+  totalLaps: number
   scoreFunnyEnabled: boolean
   hostNickname: string
   // Punts configurables (encertar la real / que et votin / més graciosa).
@@ -14,6 +15,10 @@ export interface CreateGameOptions {
   pointsFunniest: number
   // El narrador veu la definició del diccionari mentre tria paraula.
   showDefinitionOnPick: boolean
+  // Els votants només veuen números; el narrador llegeix les definicions.
+  hideDefinitionsOnVote: boolean
+  // Temps límit per escriure, en segons. 0 = desactivat.
+  writeTimeLimitSeconds: number
 }
 
 export interface GameWithPlayers extends Game {
@@ -24,9 +29,7 @@ export interface GameWithPlayers extends Game {
  * Crea una partida i hi afegeix el jugador host. Reintenta si el codi col·lisiona.
  * Retorna la partida i el jugador host creat.
  */
-export async function createGame(
-  opts: CreateGameOptions
-): Promise<{ game: Game; player: Player }> {
+export async function createGame(opts: CreateGameOptions): Promise<{ game: Game; player: Player }> {
   const authUserId = await ensureAnonymousSession()
   const deviceId = getDeviceId()
 
@@ -38,12 +41,14 @@ export async function createGame(
       .insert({
         code,
         language: opts.language,
-        total_rounds: opts.totalRounds,
+        total_laps: opts.totalLaps,
         score_funny_enabled: opts.scoreFunnyEnabled,
         score_guess_real: opts.pointsGuessReal,
         score_deceived: opts.pointsDeceived,
         score_funniest: opts.pointsFunniest,
         show_definition_on_pick: opts.showDefinitionOnPick,
+        hide_definitions_on_vote: opts.hideDefinitionsOnVote,
+        write_time_limit_seconds: opts.writeTimeLimitSeconds,
         status: 'lobby',
         current_round: 0,
       })
@@ -81,7 +86,7 @@ export async function createGame(
     return { game: { ...game, host_player_id: player.id }, player }
   }
 
-  throw lastError ?? new Error('No s\'ha pogut generar un codi de partida únic')
+  throw lastError ?? new Error("No s'ha pogut generar un codi de partida únic")
 }
 
 /** Llegeix una partida pel seu codi, amb la llista de jugadors. */
@@ -171,9 +176,11 @@ export async function abortGame(gameId: string): Promise<void> {
 /** Opcions editables d'una partida des del lobby (només host). */
 export interface UpdateGameOptions {
   language: string
-  totalRounds: number
+  totalLaps: number
   scoreFunnyEnabled: boolean
   showDefinitionOnPick: boolean
+  hideDefinitionsOnVote: boolean
+  writeTimeLimitSeconds: number
   pointsGuessReal: number
   pointsDeceived: number
   pointsFunniest: number
@@ -183,17 +190,16 @@ export interface UpdateGameOptions {
  * Actualitza les opcions de la partida des del lobby (només host). El realtime
  * propaga els canvis a tots els dispositius.
  */
-export async function updateGameOptions(
-  gameId: string,
-  opts: UpdateGameOptions
-): Promise<void> {
+export async function updateGameOptions(gameId: string, opts: UpdateGameOptions): Promise<void> {
   const { error } = await supabase
     .from('games')
     .update({
       language: opts.language,
-      total_rounds: opts.totalRounds,
+      total_laps: opts.totalLaps,
       score_funny_enabled: opts.scoreFunnyEnabled,
       show_definition_on_pick: opts.showDefinitionOnPick,
+      hide_definitions_on_vote: opts.hideDefinitionsOnVote,
+      write_time_limit_seconds: opts.writeTimeLimitSeconds,
       score_guess_real: opts.pointsGuessReal,
       score_deceived: opts.pointsDeceived,
       score_funniest: opts.pointsFunniest,
@@ -202,11 +208,16 @@ export async function updateGameOptions(
   if (error) throw error
 }
 
-/** Inicia la partida (només el host). Passa l'estat a 'in_round'. */
-export async function startGame(gameId: string): Promise<void> {
+/**
+ * Inicia la partida (només el host). Passa l'estat a 'in_round' i fixa el
+ * nombre total de rondes, calculat a partir de les voltes i dels jugadors que
+ * hi ha en aquest moment (voltes × jugadors), perquè tothom faci de narrador
+ * el mateix nombre de cops.
+ */
+export async function startGame(gameId: string, totalRounds: number): Promise<void> {
   const { error } = await supabase
     .from('games')
-    .update({ status: 'in_round', current_round: 1 })
+    .update({ status: 'in_round', current_round: 1, total_rounds: totalRounds })
     .eq('id', gameId)
   if (error) throw error
 }

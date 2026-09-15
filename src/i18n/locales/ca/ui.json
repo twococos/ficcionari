@@ -23,13 +23,14 @@
     "loading": "Carregant…",
     "error": "Hi ha hagut un error. Torna-ho a provar.",
     "copy": "Copiar",
-    "copied": "Copiat!"
+    "copied": "Copiat!",
+    "saveImage": "Desar com a imatge",
+    "leaveGame": "Sortir de la partida"
   },
   "create": {
     "title": "Crear partida",
     "yourName": "El teu nom",
     "yourNamePlaceholder": "Com et diuen?",
-    "rounds": "Rondes",
     "gameLanguage": "Idioma del joc",
     "gameLanguageHint": "Idioma de les paraules i definicions",
     "funnyMode": "Puntuar la definició més graciosa",
@@ -40,7 +41,15 @@
     "pointsGuessReal": "Encertar la definició real",
     "pointsDeceived": "Que votin la teva definició",
     "pointsFunniest": "Definició més graciosa",
-    "createButton": "Crear partida"
+    "createButton": "Crear partida",
+    "laps": "Voltes",
+    "lapsHint": "Una volta = tots els jugadors fan de narrador un cop",
+    "lapsRoundsHint": "{{rounds}} rondes amb {{players}} jugadors",
+    "hideDefinitions": "Amagar les definicions en votar",
+    "hideDefinitionsHint": "Els jugadors només veuen números; les llegeix el narrador",
+    "writeTimeLimit": "Temps límit per escriure",
+    "writeTimeLimitHint": "Tothom té el mateix temps per inventar-se la definició",
+    "writeTimeLimitMinutes": "Minuts"
   },
   "join": {
     "title": "Unir-se a una partida",
@@ -106,7 +115,8 @@
     "narratorWaiting": "Els jugadors estan escrivint…",
     "submittedCount": "{{done}} de {{total}} han enviat",
     "forceNext": "Passar igualment",
-    "hurryUp": "Ets l'últim! Afanya't…"
+    "hurryUp": "Ets l'últim! Afanya't…",
+    "timeLeft": "Temps per escriure"
   },
   "read": {
     "title": "Llegeix les definicions",
@@ -126,7 +136,8 @@
     "title": "I la més graciosa?",
     "instruction": "Ara vota la definició que t'ha fet més gràcia.",
     "voted": "Has votat!",
-    "waitingOthers": "Esperant que tothom voti…"
+    "waitingOthers": "Esperant que tothom voti…",
+    "narratorWaiting": "Els jugadors estan votant la més graciosa…"
   },
   "reveal": {
     "title": "Resultats de la ronda",
@@ -155,5 +166,9 @@
     "playAgain": "Tornar a jugar",
     "waitingHostRestart": "Esperant que l'amfitrió decideixi…",
     "exit": "Sortir"
+  },
+  "vote": {
+    "votedCount": "{{done}} de {{total}} han votat",
+    "closeVoting": "Tancar votació"
   }
 }

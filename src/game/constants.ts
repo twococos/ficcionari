@@ -4,9 +4,17 @@
 export const MIN_PLAYERS = 3
 export const MAX_PLAYERS = 12
 
-// Rondes configurables en crear la partida.
-export const ROUND_OPTIONS = [3, 5, 8, 10] as const
-export const DEFAULT_ROUNDS = 3
+// Durada de la partida en VOLTES: una volta = tots els jugadors fan de narrador
+// un cop. El nombre real de rondes es calcula en començar (voltes × jugadors),
+// de manera que la partida sempre acaba amb els torns repartits equitativament.
+export const LAP_OPTIONS = [1, 2, 3] as const
+export const DEFAULT_LAPS = 1
+
+// Temps límit per escriure definicions (opció desactivada per defecte). Es desa
+// a la BD en segons; a la interfície es configura en minuts enters.
+export const DEFAULT_WRITE_TIME_LIMIT_MIN = 3
+export const WRITE_TIME_LIMIT_MIN = 1
+export const WRITE_TIME_LIMIT_MAX = 10
 
 // Puntuació per defecte (fallback per a partides sense valors configurats).
 // Els valors reals es configuren en crear la partida i es desen a la taula games.

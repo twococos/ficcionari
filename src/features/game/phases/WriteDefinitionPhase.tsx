@@ -8,6 +8,8 @@ import { submitDefinition, setRoundPhase, ensureRealDefinition } from '../roundA
 import type { Round } from '@/lib/database.types'
 
 // Amb 4+ jugadors, quan tots menys un han escrit, l'últim té aquest temps.
+// Només s'aplica si la partida NO té temps límit configurat (si en té, tothom
+// juga amb el mateix rellotge des del principi).
 const LAST_ONE_COUNTDOWN_MS = 30000
 
 export function WriteDefinitionPhase() {
@@ -15,10 +17,34 @@ export function WriteDefinitionPhase() {
   const isNarrator = useGameStore((s) => s.isNarrator)
 
   if (!round) return null
-  return isNarrator() ? (
-    <NarratorWritingView round={round} />
-  ) : (
-    <PlayerWritingView round={round} />
+  return isNarrator() ? <NarratorWritingView round={round} /> : <PlayerWritingView round={round} />
+}
+
+/**
+ * Temps límit d'escriptura de la partida, ancorat a l'instant d'entrada a la
+ * fase (rellotge compartit): una recàrrega no el reinicia. `limitMs` és 0 quan
+ * l'opció està desactivada.
+ */
+function useWriteTimeLimit(round: Round) {
+  const game = useGameStore((s) => s.game)
+  const limitMs = (game?.write_time_limit_seconds ?? 0) * 1000
+  const elapsedMs = limitMs > 0 ? Date.now() - new Date(round.phase_started_at).getTime() : 0
+  return {
+    limitMs,
+    elapsedMs,
+    remainingMs: limitMs > 0 ? Math.max(0, limitMs - elapsedMs) : 0,
+    expired: limitMs > 0 && elapsedMs >= limitMs,
+  }
+}
+
+/** Barra del temps límit, amb l'etiqueta a sobre. */
+function TimeLimitBar({ limitMs, elapsedMs }: { limitMs: number; elapsedMs: number }) {
+  const { t } = useTranslation()
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-center text-xs font-bold text-accent">{t('write.timeLeft')}</p>
+      <ProgressBar durationMs={limitMs} variant="bar" elapsedMs={elapsedMs} />
+    </div>
   )
 }
 
@@ -27,6 +53,7 @@ function NarratorWritingView({ round }: { round: Round }) {
   const definitions = useGameStore((s) => s.definitions)
   const players = useGameStore((s) => s.players)
   const [forcing, setForcing] = useState(false)
+  const { limitMs, elapsedMs, expired } = useWriteTimeLimit(round)
 
   const connected = players.filter((p) => p.is_connected)
   const nonNarrator = connected.filter((p) => p.id !== round.narrator_player_id)
@@ -67,7 +94,9 @@ function NarratorWritingView({ round }: { round: Round }) {
         })}
       </ul>
 
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-col gap-3">
+        {/* El narrador també veu córrer el temps, per saber quant queda. */}
+        {limitMs > 0 && !expired && <TimeLimitBar limitMs={limitMs} elapsedMs={elapsedMs} />}
         <Button variant="ghost" onClick={force} disabled={forcing} className="w-full">
           {t('write.forceNext')}
         </Button>
@@ -102,9 +131,10 @@ function PlayerWritingView({ round }: { round: Round }) {
   const submitRef = useRef(submit)
   submitRef.current = submit
 
-  // Compte enrere per a l'ÚLTIM que queda per escriure (amb 4+ jugadors).
-  // Condició: sóc no-narrador, no he enviat, i sóc l'únic no-narrador que falta,
-  // amb almenys 3 no-narradors (=4+ jugadors amb el narrador).
+  const { limitMs, elapsedMs, remainingMs, expired } = useWriteTimeLimit(round)
+
+  // Compte enrere per a l'ÚLTIM que queda per escriure (amb 4+ jugadors). Només
+  // té sentit quan no hi ha temps límit global; si n'hi ha, ja corre per a tothom.
   const connected = players.filter((p) => p.is_connected)
   const nonNarrator = connected.filter((p) => p.id !== round.narrator_player_id)
   const authoredIds = new Set(
@@ -112,6 +142,7 @@ function PlayerWritingView({ round }: { round: Round }) {
   )
   const pendingIds = nonNarrator.filter((p) => !authoredIds.has(p.id)).map((p) => p.id)
   const iAmLastPending =
+    limitMs === 0 &&
     !mine &&
     nonNarrator.length >= 3 &&
     pendingIds.length === 1 &&
@@ -126,15 +157,31 @@ function PlayerWritingView({ round }: { round: Round }) {
     return () => clearTimeout(timer)
   }, [iAmLastPending])
 
-  // Barra de progrés del compte enrere, mostrada sota el quadre quan escau.
-  const lastOneCountdown = iAmLastPending ? (
+  // Mateix efecte per al temps límit global. S'arma mentre s'estigui editant
+  // (encara que ja s'hagi enviat abans: si has obert "Editar" quan s'acaba el
+  // temps, val el text que tens a la pantalla). `submitDefinition` és idempotent.
+  useEffect(() => {
+    if (limitMs === 0 || expired || !editing) return
+    const timer = setTimeout(() => {
+      if (submitRef.current) void submitRef.current()
+    }, remainingMs)
+    return () => clearTimeout(timer)
+    // `remainingMs` deriva de phase_started_at, que ja és a les dependències.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limitMs, expired, editing, round.phase_started_at])
+
+  // Barra de progrés del compte enrere, mostrada sota el botó quan escau.
+  const countdown = iAmLastPending ? (
     <div className="flex flex-col gap-1">
       <p className="text-center text-xs font-bold text-accent">{t('write.hurryUp')}</p>
       <ProgressBar durationMs={LAST_ONE_COUNTDOWN_MS} variant="bar" />
     </div>
+  ) : limitMs > 0 && !expired ? (
+    <TimeLimitBar limitMs={limitMs} elapsedMs={elapsedMs} />
   ) : null
 
-  // Capçalera blanca amb la paraula (mateix format), reutilitzada als dos estats.
+  // Capçalera blanca amb la paraula, unida al quadre de text per una línia:
+  // així la paraula queda just sobre el que s'està escrivint.
   const wordHeader = (
     <div className="bg-white px-4 py-3 text-center">
       <p className="text-xs font-bold uppercase tracking-wide text-primary-dark/50">
@@ -158,7 +205,8 @@ function PlayerWritingView({ round }: { round: Round }) {
           <p className="font-bold text-accent">{t('write.submitted')}</p>
         </div>
         <p className="text-center text-sm text-white/60">{t('write.waitingOthers')}</p>
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col gap-3">
+          {countdown}
           <Button variant="ghost" onClick={() => setEditing(true)} className="w-full">
             {t('write.edit')}
           </Button>
@@ -169,7 +217,7 @@ function PlayerWritingView({ round }: { round: Round }) {
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      {/* Quadre blanc: capçalera amb la paraula + textarea per escriure. */}
+      {/* Quadre blanc: capçalera amb la paraula + textarea, units. */}
       <div className="overflow-hidden rounded-2xl bg-white shadow-lg">
         {wordHeader}
         <textarea
@@ -193,7 +241,7 @@ function PlayerWritingView({ round }: { round: Round }) {
         {submitting ? t('common.loading') : t('write.submit')}
       </Button>
 
-      {lastOneCountdown}
+      {countdown}
     </div>
   )
 }

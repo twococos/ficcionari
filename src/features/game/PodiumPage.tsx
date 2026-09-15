@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ScreenLayout } from '@/components/ScreenLayout'
@@ -8,6 +8,8 @@ import { useGameStore } from '@/store/gameStore'
 import { useGameRealtime } from '@/features/lobby/useGameRealtime'
 import { fetchGameByCode } from '@/features/lobby/lobbyApi'
 import { restartGame } from './roundApi'
+import { useDownloadImage } from './useDownloadImage'
+import { DownloadButton } from './DownloadButton'
 import { getDeviceId } from '@/lib/device'
 import { normalizeCode } from '@/game/constants'
 import type { Player } from '@/lib/database.types'
@@ -52,6 +54,10 @@ export function PodiumPage() {
     else if (status === 'in_round') navigate(`/game/${gameCode}`)
   }, [status, gameCode, navigate])
 
+  // Desar el podi com a imatge.
+  const fileName = useCallback(() => `ficcionari-podi-${gameCode ?? ''}.png`, [gameCode])
+  const capture = useDownloadImage(fileName)
+
   if (!game) {
     return (
       <ScreenLayout showLanguage={false}>
@@ -85,44 +91,53 @@ export function PodiumPage() {
     <ScreenLayout showLanguage={false} onBack={() => navigate('/')}>
       <Confetti />
       <div className="flex flex-1 flex-col gap-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-black text-white">{t('podium.title')}</h1>
-          <p className="mt-2 text-lg font-bold text-accent">
-            {isTie ? t('podium.tie') : t('podium.winner', { name: top?.nickname ?? '' })}
-          </p>
+        {/* El node capturable: títol, podi i resta de la classificació. */}
+        <div ref={capture.ref} className="flex flex-col gap-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-black text-white">{t('podium.title')}</h1>
+            <p className="mt-2 text-lg font-bold text-accent">
+              {isTie ? t('podium.tie') : t('podium.winner', { name: top?.nickname ?? '' })}
+            </p>
+          </div>
+
+          <PodiumTop players={ranked} />
+
+          {/* Resta de jugadors (a partir del 4t) */}
+          {ranked.length > 3 && (
+            <ul className="flex flex-col gap-2">
+              {ranked.slice(3).map((p, i) => (
+                <li
+                  key={p.id}
+                  className="flex items-center justify-between rounded-2xl bg-primary-dark/40 px-4 py-2"
+                >
+                  <span className="font-bold text-white">
+                    {i + 4}. {p.nickname}
+                  </span>
+                  <span className="font-black text-white">{p.score}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-
-        <PodiumTop players={ranked} />
-
-        {/* Resta de jugadors (a partir del 4t) */}
-        {ranked.length > 3 && (
-          <ul className="flex flex-col gap-2">
-            {ranked.slice(3).map((p, i) => (
-              <li
-                key={p.id}
-                className="flex items-center justify-between rounded-2xl bg-primary-dark/40 px-4 py-2"
-              >
-                <span className="font-bold text-white">
-                  {i + 4}. {p.nickname}
-                </span>
-                <span className="font-black text-white">{p.score}</span>
-              </li>
-            ))}
-          </ul>
-        )}
 
         <div className="mt-auto flex flex-col gap-3">
           {isHost() ? (
-            <Button
-              variant="accent"
-              onClick={handleRestart}
-              disabled={restarting}
-              className="w-full"
-            >
-              {restarting ? t('common.loading') : t('podium.playAgain')}
-            </Button>
+            <div className="flex items-stretch gap-3">
+              <DownloadButton onClick={capture.download} busy={capture.busy} />
+              <Button
+                variant="accent"
+                onClick={handleRestart}
+                disabled={restarting}
+                className="flex-1"
+              >
+                {restarting ? t('common.loading') : t('podium.playAgain')}
+              </Button>
+            </div>
           ) : (
-            <p className="text-center text-sm text-white/60">{t('podium.waitingHostRestart')}</p>
+            <div className="flex flex-col gap-3">
+              <DownloadButton onClick={capture.download} busy={capture.busy} fullWidth />
+              <p className="text-center text-sm text-white/60">{t('podium.waitingHostRestart')}</p>
+            </div>
           )}
           <Button variant="ghost" onClick={() => navigate('/')} className="w-full">
             {t('podium.exit')}

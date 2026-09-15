@@ -8,21 +8,29 @@
  *
  * `flush`: barra enganxada a la vora (amplada completa, sense marges) → més
  * gruixuda i amb cantonades rectes perquè quedi arran de pantalla.
+ *
+ * `elapsedMs`: temps ja transcorregut quan es munta la barra. Amb un delay
+ * NEGATIU l'animació arrenca ja avançada, de manera que qui recarregui la
+ * pàgina a mitja compte enrere vegi el temps restant real i no el reiniciï.
  */
 export function ProgressBar({
   durationMs,
   variant = 'bar',
   flush = false,
+  elapsedMs = 0,
 }: {
   durationMs: number
   variant?: 'bar' | 'fill'
   flush?: boolean
+  elapsedMs?: number
 }) {
   const fill = (
     <div
       className={`ficc-stripes h-full ${flush ? 'rounded-r-full' : 'rounded-full'}`}
       style={{
         animation: `progressGrow ${durationMs}ms linear forwards, stripesMove 0.6s linear infinite`,
+        // Només el primer keyframe es desplaça; les ratlles segueixen el seu cicle.
+        animationDelay: elapsedMs > 0 ? `-${elapsedMs}ms, 0ms` : undefined,
       }}
     />
   )
@@ -38,11 +46,7 @@ export function ProgressBar({
   }
 
   return (
-    <div
-      className={`w-full overflow-hidden bg-white/25 ${
-        flush ? 'h-6' : 'h-3 rounded-full'
-      }`}
-    >
+    <div className={`w-full overflow-hidden bg-white/25 ${flush ? 'h-6' : 'h-3 rounded-full'}`}>
       {fill}
     </div>
   )

@@ -126,3 +126,31 @@ button {
   background-size: 40px 40px;
   animation: stripesMove 0.6s linear infinite;
 }
+
+/* Mentre es captura un tros de pantalla com a imatge (desar resultats/podi):
+   atura les animacions d'entrada, perquè els elements amb animation-delay no
+   quedin congelats a mig aparèixer, i amaga el que no ha de sortir a la foto. */
+.ficc-capturing,
+.ficc-capturing * {
+  animation: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+/* El marge de la imatge NO es posa aquí: qualsevol padding sobre el node
+   capturat n'estreny el contingut i el text es reparteix diferent del que es
+   veu a la pantalla. El marge l'afegeix useDownloadImage ampliant el llenç de
+   la captura, sense tocar el node. */
+
+.ficc-capturing [data-capture-hide] {
+  display: none !important;
+}
+
+/* Invers: elements que NOMÉS surten a la imatge, no a la pantalla. */
+[data-capture-only] {
+  display: none;
+}
+
+.ficc-capturing [data-capture-only] {
+  display: block !important;
+}

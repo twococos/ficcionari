@@ -20,8 +20,26 @@ import { AnnounceWordPhase } from './phases/AnnounceWordPhase'
 import { WriteDefinitionPhase } from './phases/WriteDefinitionPhase'
 import { ReadingPhase } from './phases/ReadingPhase'
 import { VotingPhase } from './phases/VotingPhase'
-import { RevealPhase, AUTO_ADVANCE_MS } from './phases/RevealPhase'
-import { ProgressBar } from './ProgressBar'
+import { RevealPhase } from './phases/RevealPhase'
+import { WordBanner } from './WordBanner'
+
+// Fases en què la paraula de la ronda es manté visible per a TOTHOM. No hi és
+// `announcing_word` a posta: allà els jugadors l'han d'escoltar del narrador.
+const WORD_VISIBLE_PHASES = new Set([
+  'writing_definitions',
+  'narrator_reading',
+  'voting_real',
+  'voting_funny',
+  'reveal',
+])
+
+// A `writing_definitions` els jugadors ja tenen la paraula dins del quadre
+// d'escriure (capçalera unida al textarea), així que el banner hi sobra: només
+// el veu el narrador, que no té aquell quadre.
+function showsWordBanner(phase: string, isNarrator: boolean): boolean {
+  if (!WORD_VISIBLE_PHASES.has(phase)) return false
+  return phase !== 'writing_definitions' || isNarrator
+}
 
 export function GamePage() {
   const { t } = useTranslation()
@@ -110,24 +128,32 @@ export function GamePage() {
   }
 
   return (
-    <ScreenLayout showLanguage={false} onBack={() => navigate('/')}>
+    <ScreenLayout
+      showLanguage={false}
+      onBack={() => navigate('/')}
+      backLabel={t('common.leaveGame')}
+    >
       <FunnyBackground active={round?.phase === 'voting_funny'} />
       <GameHeader />
+
+      {/* La paraula es renderitza aquí, fora del contenidor animat de la fase,
+          perquè no parpellegi a cada canvi de fase. */}
+      {round?.word && showsWordBanner(round.phase, isNarrator()) && (
+        <div className="mb-4">
+          <WordBanner
+            word={round.word}
+            compact
+            tone={round.phase === 'voting_funny' ? 'onAccent' : 'default'}
+          />
+        </div>
+      )}
+
       {!round ? (
         <p className="text-center text-white/60">{t('common.loading')}</p>
       ) : (
         <PhaseView phase={round.phase} />
       )}
       <HostControls />
-
-      {/* Barra d'auto-avanç per als jugadors (no narrador) a la pantalla de
-          resultats. Va aquí, fora del contenidor animat de la fase, perquè el
-          `fixed` s'ancori al viewport i no es mogui amb el scroll. */}
-      {round?.phase === 'reveal' && !isNarrator() && (
-        <div className="fixed inset-x-0 bottom-0 z-20">
-          <ProgressBar durationMs={AUTO_ADVANCE_MS} variant="bar" flush />
-        </div>
-      )}
     </ScreenLayout>
   )
 }

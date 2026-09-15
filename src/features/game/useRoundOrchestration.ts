@@ -1,16 +1,24 @@
 import { useEffect, useRef } from 'react'
 import { useGameStore } from '@/store/gameStore'
-import { setRoundPhase, ensureRealDefinition, applyRoundScoring } from './roundApi'
+import {
+  setRoundPhase,
+  ensureRealDefinition,
+  applyRoundScoring,
+  nextPhaseAfterVote,
+} from './roundApi'
 
 /**
  * Orquestra les transicions AUTOMÀTIQUES de fase. Perquè no hi hagi curses
  * (múltiples dispositius disparant la mateixa transició), només el NARRADOR
  * executa aquestes transicions: ell no escriu ni vota, sempre és present i únic.
  *
- * Transicions automàtiques (quan TOTS els no-narradors han completat):
- *  - writing_definitions → narrator_reading (tots han enviat definició)
+ * Transicions automàtiques (quan TOTS els no-narradors han completat, o bé
+ * quan s'exhaureix el temps límit d'escriptura si la partida en té):
+ *  - writing_definitions → narrator_reading (tots han enviat definició / temps)
  *  - voting_real → voting_funny o reveal (tots han votat la real)
  *  - voting_funny → reveal (tots han votat la graciosa)
+ *
+ * Les votacions, a més, les pot tancar el narrador a mà des de VotingPhase.
  */
 export function useRoundOrchestration() {
   const game = useGameStore((s) => s.game)
@@ -35,19 +43,38 @@ export function useRoundOrchestration() {
 
     const actionKey = (phase: string) => `${round.id}:${phase}`
 
-    // 1) Escriptura → tots els no-narradors han enviat definició
+    // 1) Escriptura → tots els no-narradors han enviat definició, o bé s'ha
+    //    exhaurit el temps límit configurat per a la partida.
     if (round.phase === 'writing_definitions') {
       const authored = new Set(
         definitions.filter((d) => d.author_player_id).map((d) => d.author_player_id)
       )
       const allWritten = nonNarrator.every((p) => authored.has(p.id))
-      if (allWritten && lastActionRef.current !== actionKey('writing_definitions')) {
+
+      const goToReading = () => {
+        if (lastActionRef.current === actionKey('writing_definitions')) return
         lastActionRef.current = actionKey('writing_definitions')
         // Insereix la definició real barrejada abans de llegir/votar.
         ;(async () => {
           if (round.real_definition) await ensureRealDefinition(round.id, round.real_definition)
           await setRoundPhase(round.id, 'narrator_reading')
         })()
+      }
+
+      if (allWritten) {
+        goToReading()
+        return
+      }
+
+      // Temps límit: el narrador passa de fase encara que falti gent. El
+      // temporitzador es basa en l'instant d'entrada a la fase, així que
+      // sobreviu a recàrregues del dispositiu del narrador.
+      const limitMs = (game.write_time_limit_seconds ?? 0) * 1000
+      if (limitMs > 0) {
+        const remaining = limitMs - (Date.now() - new Date(round.phase_started_at).getTime())
+        // Marge perquè els auto-enviaments dels jugadors arribin abans de passar.
+        const timer = setTimeout(goToReading, Math.max(0, remaining) + 1500)
+        return () => clearTimeout(timer)
       }
       return
     }
@@ -60,8 +87,7 @@ export function useRoundOrchestration() {
       const allVoted = nonNarrator.every((p) => voters.has(p.id))
       if (allVoted && lastActionRef.current !== actionKey('voting_real')) {
         lastActionRef.current = actionKey('voting_real')
-        const next = game.score_funny_enabled ? 'voting_funny' : 'reveal'
-        void setRoundPhase(round.id, next)
+        void setRoundPhase(round.id, nextPhaseAfterVote('real', game.score_funny_enabled))
       }
       return
     }
