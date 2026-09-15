@@ -276,6 +276,12 @@ Firefox per Android (protecció de seguiment, mode privat) pot llançar només d
   partida"** (sense botó de desar). Controls compartits amb la creació via `GameOptionsFields`.
 - Confirmació de "fet" (definició enviada / has votat): icona `CheckIcon` (check en cercle
   accent), **no** l'emoji `✅`.
+- **Diccionaris: fora autoreferències i etiquetes de camp** (post-playtest). Les definicions
+  que expliquen la paraula amb una de la mateixa família (`sorneguerament: d'una manera
+  sorneguera`) són injugables, i el `(botànica)` inicial delatava la real perquè cap jugador
+  l'escriu. Ho aplica `scripts/clean-dictionary.mjs` (idempotent) sobre els JSON ja generats;
+  **cal passar-lo cada cop que es regeneri un diccionari amb `parse-dump.mjs`**. Els llindars
+  i per què s'exclouen les preposicions però no arrels com `forma`, a `scripts/README.md`.
 
 ---
 
